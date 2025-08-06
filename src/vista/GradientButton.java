@@ -6,14 +6,29 @@ import java.awt.event.*;
 
 public class GradientButton extends JButton {
 
-    private Color colorStart = new Color(25, 118, 210);
-    private Color colorEnd = new Color(21, 101, 192);
-    private Color hoverStart = new Color(33, 150, 243);
-    private Color hoverEnd = new Color(30, 136, 229);
+    private Color colorStart;
+    private Color colorEnd;
+    private Color hoverStart;
+    private Color hoverEnd;
     private boolean hover = false;
 
+    // === Constructor con colores por defecto (Azules) ===
     public GradientButton(String text, Icon icon) {
+        this(text, icon,
+                new Color(25, 118, 210), new Color(21, 101, 192)); // Azul base
+    }
+
+    // === Constructor con colores personalizados ===
+    public GradientButton(String text, Icon icon, Color startColor, Color endColor) {
         super(text, icon);
+
+        this.colorStart = startColor;
+        this.colorEnd = endColor;
+
+        // Hover más claros
+        this.hoverStart = startColor.brighter();
+        this.hoverEnd = endColor.brighter();
+
         setContentAreaFilled(false);
         setFocusPainted(false);
         setForeground(Color.WHITE);
@@ -37,13 +52,11 @@ public class GradientButton extends JButton {
 
             @Override
             public void mousePressed(MouseEvent e) {
-                // Opcional: efecto presionado (bajar 1 píxel)
                 setLocation(getX(), getY() + 1);
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
-                // Regresar a posición original
                 setLocation(getX(), getY() - 1);
             }
         });
@@ -55,10 +68,8 @@ public class GradientButton extends JButton {
         int width = getWidth();
         int height = getHeight();
 
-        // Suavizar bordes y degradado
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        // Crear degradado según hover o no
         GradientPaint paint;
         if (hover) {
             paint = new GradientPaint(0, 0, hoverStart, 0, height, hoverEnd);
@@ -67,10 +78,8 @@ public class GradientButton extends JButton {
         }
         g2.setPaint(paint);
 
-        // Dibujar fondo redondeado
         g2.fillRoundRect(0, 0, width, height, 30, 30);
 
-        // Dibujar sombra interior sutil (opcional)
         g2.setColor(new Color(255, 255, 255, 50));
         g2.drawRoundRect(1, 1, width - 3, height - 3, 30, 30);
 

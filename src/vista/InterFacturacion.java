@@ -4,8 +4,21 @@ import com.mysql.jdbc.PreparedStatement;
 import java.sql.Connection;
 import conexion.Conexion;
 import Servicio.VentaFacade;
+import com.formdev.flatlaf.FlatLightLaf;
+import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GradientPaint;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.GridLayout;
+import java.awt.Image;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import static java.awt.image.ImageObserver.WIDTH;
+import java.net.URL;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import java.sql.Statement;
@@ -14,10 +27,20 @@ import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.UIManager;
+import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import modelo.CabeceraVenta;
 import modelo.DetalleVenta;
+import vista.GradientButton;
 
 public class InterFacturacion extends javax.swing.JInternalFrame {
 
@@ -51,32 +74,179 @@ public class InterFacturacion extends javax.swing.JInternalFrame {
     private int auxIdDetalle = 1; //ID del detalle de venta
 
     public InterFacturacion() {
-        initComponents();
-        this.setSize(new Dimension(800, 600));
-        this.setTitle("Facturacion");
 
-        //Cargar los clientes       
-        this.CargarComboClientes();
-        //Cargar los productos
-        this.CargarComboProductos();
+        // Estilo FlatLaf
+        FlatLightLaf.setup();
+        UIManager.put("Button.arc", 20);
+        UIManager.put("Component.arc", 15);
+        UIManager.put("TextComponent.arc", 10);
 
-        //Cargar la tabla 
-        this.inicializarTablaProductos();
+        initComponents2();
+        this.setSize(new Dimension(950, 650));
+        this.setTitle("🛒 Facturación");
+        this.setMaximizable(true);
 
+        // Inicializar datos
+        CargarComboClientes();
+        CargarComboProductos();
+        inicializarTablaProductos();
+
+        // Valores por defecto
         txt_efectivo.setEnabled(false);
         jButton_calcular_cambio.setEnabled(false);
-
         txt_subtotal.setText("0.0");
         txt_igv.setText("0.0");
         txt_descuento.setText("0.0");
         txt_total_pagar.setText("0.0");
+    }
 
-        // Insertar imagen en nuestro JLabel
-        ImageIcon wallpaper = new ImageIcon("src/img/fondo3.jpg");
-        Icon icono = new ImageIcon(wallpaper.getImage().getScaledInstance(800, 600, WIDTH));
-        jLabel_wallpaper.setIcon(icono);
-        this.repaint();
+    // ====== Inicialización UI ======
+    private void initComponents2() {
 
+        // === Fondo Principal ===
+        jPanel1 = new JPanel(new BorderLayout(15, 15)) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2 = (Graphics2D) g;
+                Color color1 = new Color(245, 247, 250);
+                Color color2 = new Color(230, 240, 250);
+                g2.setPaint(new GradientPaint(0, 0, color1, getWidth(), getHeight(), color2));
+                g2.fillRect(0, 0, getWidth(), getHeight());
+            }
+        };
+        jPanel1.setOpaque(false);
+
+        // === PANEL CLIENTE ===
+        jComboBox_cliente = new JComboBox<>();
+        txt_cliente_buscar = new JTextField();
+        jButton_busca_cliente = createGradientButton("Buscar", "/img/search.png",
+                new Color(25, 118, 210), new Color(21, 101, 192)); // Azul profesional
+
+        JPanel panelCliente = createTitledPanel("Cliente");
+        panelCliente.add(jComboBox_cliente);
+        panelCliente.add(txt_cliente_buscar);
+        panelCliente.add(jButton_busca_cliente);
+
+        jComboBox_cliente.setPreferredSize(new Dimension(250, 30));
+        txt_cliente_buscar.setPreferredSize(new Dimension(150, 30));
+        jButton_busca_cliente.addActionListener(e -> jButton_busca_clienteActionPerformed(e));
+
+        // === PANEL PRODUCTO ===
+        jComboBox_producto = new JComboBox<>();
+        txt_cantidad = new JTextField();
+        jButton_añadir_producto = createGradientButton("Añadir", "/img/add.png",
+                new Color(56, 142, 60), new Color(46, 125, 50)); // Verde profesional
+
+        JPanel panelProducto = createTitledPanel("Producto");
+        panelProducto.add(jComboBox_producto);
+        panelProducto.add(txt_cantidad);
+        panelProducto.add(jButton_añadir_producto);
+
+        jComboBox_producto.setPreferredSize(new Dimension(250, 30));
+        txt_cantidad.setPreferredSize(new Dimension(80, 30));
+        jButton_añadir_producto.addActionListener(e -> jButton_añadir_productoActionPerformed(e));
+
+        // === TABLA PRODUCTOS ===
+        jTable_productos = new JTable();
+        jTable_productos.setRowHeight(28);
+        jTable_productos.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        jScrollPane1 = new JScrollPane(jTable_productos);
+
+        JPanel panelTabla = createTitledPanel("Detalle Venta");
+        panelTabla.setLayout(new BorderLayout());
+        panelTabla.add(jScrollPane1, BorderLayout.CENTER);
+        jTable_productos.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jTable_productosMouseClicked(evt);
+            }
+        });
+
+        // === PANEL TOTALES ===
+        txt_subtotal = crearCampoTotal();
+        txt_descuento = crearCampoTotal();
+        txt_igv = crearCampoTotal();
+        txt_total_pagar = crearCampoTotal();
+
+        JPanel panelTotales = createTitledPanel("Totales");
+        panelTotales.setLayout(new GridLayout(4, 2, 10, 10));
+        panelTotales.add(new JLabel("Subtotal:"));
+        panelTotales.add(txt_subtotal);
+        panelTotales.add(new JLabel("Descuento:"));
+        panelTotales.add(txt_descuento);
+        panelTotales.add(new JLabel("IGV:"));
+        panelTotales.add(txt_igv);
+        panelTotales.add(new JLabel("Total Pagar:"));
+        panelTotales.add(txt_total_pagar);
+
+        // === PANEL PAGO ===
+        txt_efectivo = new JTextField();
+        txt_cambio = new JTextField();
+        jButton_calcular_cambio = createGradientButton("Cambio", "/img/money.png",
+                new Color(251, 192, 45), new Color(249, 168, 37)); // Amarillo profesional
+        jButton_RegistrarVenta = createGradientButton("Registrar", "/img/save.png",
+                new Color(211, 47, 47), new Color(198, 40, 40)); // Rojo elegante
+
+        JPanel panelPago = createTitledPanel("Pago");
+        panelPago.add(new JLabel("Efectivo:"));
+        panelPago.add(txt_efectivo);
+        panelPago.add(new JLabel("Cambio:"));
+        panelPago.add(txt_cambio);
+        panelPago.add(jButton_calcular_cambio);
+        panelPago.add(jButton_RegistrarVenta);
+
+        txt_efectivo.setPreferredSize(new Dimension(100, 30));
+        txt_cambio.setPreferredSize(new Dimension(100, 30));
+        jButton_calcular_cambio.addActionListener(e -> jButton_calcular_cambioActionPerformed(e));
+        jButton_RegistrarVenta.addActionListener(e -> jButton_RegistrarVentaActionPerformed(e));
+
+        // === Layout Principal ===
+        JPanel panelSuperior = new JPanel(new GridLayout(2, 1, 10, 10));
+        panelSuperior.setOpaque(false);
+        panelSuperior.add(panelCliente);
+        panelSuperior.add(panelProducto);
+
+        JPanel panelDerecha = new JPanel(new BorderLayout(10, 10));
+        panelDerecha.setOpaque(false);
+        panelDerecha.add(panelTotales, BorderLayout.NORTH);
+        panelDerecha.add(panelPago, BorderLayout.CENTER);
+
+        jPanel1.add(panelSuperior, BorderLayout.NORTH);
+        jPanel1.add(panelTabla, BorderLayout.CENTER);
+        jPanel1.add(panelDerecha, BorderLayout.EAST);
+
+        jLabel_wallpaper = new JLabel();
+        jLabel_wallpaper.setLayout(new BorderLayout());
+        jLabel_wallpaper.add(jPanel1, BorderLayout.CENTER);
+        setContentPane(jLabel_wallpaper);
+    }
+
+    // ====== Métodos auxiliares ======
+    private JPanel createTitledPanel(String title) {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
+        panel.setBorder(BorderFactory.createTitledBorder(title));
+        panel.setBackground(Color.WHITE);
+        return panel;
+    }
+
+    private JTextField crearCampoTotal() {
+        JTextField campo = new JTextField();
+        campo.setHorizontalAlignment(JTextField.RIGHT);
+        campo.setEditable(false);
+        campo.setBackground(new Color(240, 240, 240));
+        campo.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        return campo;
+    }
+
+    private GradientButton createGradientButton(String text, String iconPath, Color start, Color end) {
+        URL iconURL = getClass().getResource(iconPath);
+        ImageIcon icon = null;
+        if (iconURL != null) {
+            icon = new ImageIcon(new ImageIcon(iconURL).getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH));
+        }
+        GradientButton button = new GradientButton(text, icon, start, end);
+        button.setPreferredSize(new Dimension(150, 40));
+        return button;
     }
 
     //Metodo para inicializar la tabla de los productos
@@ -535,38 +705,38 @@ public class InterFacturacion extends javax.swing.JInternalFrame {
     private void jButton_RegistrarVentaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton_RegistrarVentaActionPerformed
 
         if (!jComboBox_cliente.getSelectedItem().equals("Seleccione cliente:")) {
-        if (!listaProductos.isEmpty()) {
+            if (!listaProductos.isEmpty()) {
 
-            this.obtenerIdCliente();
+                this.obtenerIdCliente();
 
-            CabeceraVenta cabeceraVenta = new CabeceraVenta();
-            cabeceraVenta.setIdCliente(idCliente);
-            cabeceraVenta.setFechaVenta(new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
-            cabeceraVenta.setValorPagar(Double.parseDouble(txt_total_pagar.getText()));
-            cabeceraVenta.setEstado(1);
+                CabeceraVenta cabeceraVenta = new CabeceraVenta();
+                cabeceraVenta.setIdCliente(idCliente);
+                cabeceraVenta.setFechaVenta(new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
+                cabeceraVenta.setValorPagar(Double.parseDouble(txt_total_pagar.getText()));
+                cabeceraVenta.setEstado(1);
 
-            VentaFacade ventaFacade = new VentaFacade();
-            ventaFacade.procesarVenta(cabeceraVenta, listaProductos);
+                VentaFacade ventaFacade = new VentaFacade();
+                ventaFacade.procesarVenta(cabeceraVenta, listaProductos);
 
-            JOptionPane.showMessageDialog(null, "Venta registrada correctamente.");
+                JOptionPane.showMessageDialog(null, "Venta registrada correctamente.");
 
-            // Reset de UI
-            txt_subtotal.setText("0.0");
-            txt_igv.setText("0.0");
-            txt_descuento.setText("0.0");
-            txt_total_pagar.setText("0.0");
-            txt_efectivo.setText("0.0");
-            txt_cambio.setText("0.0");
-            listaProductos.clear();
-            listaTablaProducto();
-            CargarComboClientes();
+                // Reset de UI
+                txt_subtotal.setText("0.0");
+                txt_igv.setText("0.0");
+                txt_descuento.setText("0.0");
+                txt_total_pagar.setText("0.0");
+                txt_efectivo.setText("0.0");
+                txt_cambio.setText("0.0");
+                listaProductos.clear();
+                listaTablaProducto();
+                CargarComboClientes();
 
+            } else {
+                JOptionPane.showMessageDialog(null, "Debe agregar productos a la venta.");
+            }
         } else {
-            JOptionPane.showMessageDialog(null, "Debe agregar productos a la venta.");
+            JOptionPane.showMessageDialog(null, "Debe seleccionar un cliente.");
         }
-    } else {
-        JOptionPane.showMessageDialog(null, "Debe seleccionar un cliente.");
-    }
 
     }//GEN-LAST:event_jButton_RegistrarVentaActionPerformed
 
@@ -795,5 +965,37 @@ public class InterFacturacion extends javax.swing.JInternalFrame {
             System.out.println("Error al obtener el id del cliente: " + e.getMessage());
         }
     }
-    
+
+    private JButton createIconButton(String text, String iconPath, Color color) {
+        // Cargar icono
+        ImageIcon originalIcon = new ImageIcon(iconPath);
+        Image scaledImage = originalIcon.getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH);
+        ImageIcon resizedIcon = new ImageIcon(scaledImage);
+
+        // Crear botón
+        JButton button = new JButton(text, resizedIcon);
+        button.setBackground(color);
+        button.setForeground(Color.WHITE);
+        button.setFocusPainted(false);
+        button.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        button.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
+        button.setIconTextGap(10);
+        button.setPreferredSize(new Dimension(160, 40));
+
+        // Hover (opcional, efecto moderno)
+        button.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                button.setBackground(color.darker());
+            }
+
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                button.setBackground(color);
+            }
+        });
+
+        return button;
+    }
+
 }
