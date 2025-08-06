@@ -48,19 +48,19 @@
 <div align="center">
 
 ### 🔑 Pantalla de Login
-<img src="img/login.png" width="700" alt="Pantalla de Login"/>
+<img src="src/img/LoginVista.png" width="700" alt="Pantalla de Login"/>
 
 ### Interfaz Principal
-<img src="img/Interfazprincipal" width="700" alt="Interfaz Principal del Sistema"/>
+<img src="src/img/MenuVista.png" width="700" alt="Interfaz Principal del Sistema"/>
 
 ### Módulo de Ventas
-<img src="img/InterfazVentas" width="700" alt="Procesamiento de Ventas"/>
+<img src="src/img/InterfazVentas.png" width="700" alt="Procesamiento de Ventas"/>
 
 ### Reportes PDF
-<img src="img/ReporteProductosVista.png" width="700" alt="Generación de Reportes"/>
+<img src="src/img/ReporteProductosVista.png" width="700" alt="Generación de Reportes"/>
 
 ### 📊 Dashboard (Panel Principal)
-<img src="img/DashboardVista.png" width="700" alt="Panel de Control"/>
+<img src="src/img/DashboardVista.png" width="700" alt="Panel de Control"/>
 
 </div>
 
