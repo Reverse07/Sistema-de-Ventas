@@ -54,7 +54,7 @@
 <img src="src/img/MenuVista.png" width="700" alt="Interfaz Principal del Sistema"/>
 
 ### Módulo de Ventas
-<img src="src/img/InterfazVentas.png" width="700" alt="Procesamiento de Ventas"/>
+<img src="src/img/InterfazVenta.png" width="700" alt="Procesamiento de Ventas"/>
 
 ### Reportes PDF
 <img src="src/img/ReporteProductosVista.png" width="700" alt="Generación de Reportes"/>
