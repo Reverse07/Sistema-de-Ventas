@@ -9,7 +9,6 @@ public class DetalleVenta {
     private int idProducto;
     private int cantidad;
     
-    //Esta de mas 
     private String nombre;
     
     private double precioUnitario;
