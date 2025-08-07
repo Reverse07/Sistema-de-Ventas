@@ -9,7 +9,7 @@ public class Conexion {
         try {
             String url = "jdbc:mysql://localhost:3306/bd_sistemaVentas?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
             String user = "root";
-            String password = "Nomeacuerdo2006@";
+            String password = "root";
             return DriverManager.getConnection(url, user, password);
         } catch (SQLException e) {
             System.out.println("❌ Error en la conexión: " + e.getMessage());

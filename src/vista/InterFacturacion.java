@@ -1,48 +1,36 @@
 package vista;
 
-import com.mysql.jdbc.PreparedStatement;
+// ========== Librerías de Java Swing ==========
+import javax.swing.*;
+import java.awt.*;
+
+// ========== Librerías para manejo de fechas y datos ==========
+import java.util.Date;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+
+// ========== Librerías para conexión a base de datos ==========
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.sql.SQLException;
+
+
+// ========== Proyecto interno ==========
 import conexion.Conexion;
 import Servicio.VentaFacade;
 import com.formdev.flatlaf.FlatLightLaf;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.GradientPaint;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.GridLayout;
-import java.awt.Image;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import static java.awt.image.ImageObserver.WIDTH;
 import java.net.URL;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import java.sql.Statement;
-import java.sql.SQLException;
-import java.sql.ResultSet;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import javax.swing.UIManager;
-import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import modelo.CabeceraVenta;
 import modelo.DetalleVenta;
 import vista.GradientButton;
 
 public class InterFacturacion extends javax.swing.JInternalFrame {
+
+   
+    private JPanel panelPago;
 
     //Modelo de los datos
     private DefaultTableModel modeloDatosProducto;
@@ -103,7 +91,6 @@ public class InterFacturacion extends javax.swing.JInternalFrame {
     // ====== Inicialización UI ======
     private void initComponents2() {
 
-        // === Fondo Principal ===
         jPanel1 = new JPanel(new BorderLayout(15, 15)) {
             @Override
             protected void paintComponent(Graphics g) {
@@ -187,7 +174,9 @@ public class InterFacturacion extends javax.swing.JInternalFrame {
         jButton_RegistrarVenta = createGradientButton("Registrar", "/img/save.png",
                 new Color(211, 47, 47), new Color(198, 40, 40)); // Rojo elegante
 
-        JPanel panelPago = createTitledPanel("Pago");
+        panelPago = createTitledPanel("Pago");
+        panelPago.setLayout(new FlowLayout());
+
         panelPago.add(new JLabel("Efectivo:"));
         panelPago.add(txt_efectivo);
         panelPago.add(new JLabel("Cambio:"));
@@ -705,39 +694,38 @@ public class InterFacturacion extends javax.swing.JInternalFrame {
     private void jButton_RegistrarVentaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton_RegistrarVentaActionPerformed
 
         if (!jComboBox_cliente.getSelectedItem().equals("Seleccione cliente:")) {
-            if (!listaProductos.isEmpty()) {
+        if (!listaProductos.isEmpty()) {
 
-                this.obtenerIdCliente();
+            this.obtenerIdCliente();
 
-                CabeceraVenta cabeceraVenta = new CabeceraVenta();
-                cabeceraVenta.setIdCliente(idCliente);
-                cabeceraVenta.setFechaVenta(new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
-                cabeceraVenta.setValorPagar(Double.parseDouble(txt_total_pagar.getText()));
-                cabeceraVenta.setEstado(1);
+            CabeceraVenta cabeceraVenta = new CabeceraVenta();
+            cabeceraVenta.setIdCliente(idCliente);
+            cabeceraVenta.setFechaVenta(new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
+            cabeceraVenta.setValorPagar(Double.parseDouble(txt_total_pagar.getText()));
+            cabeceraVenta.setEstado(1);
 
-                VentaFacade ventaFacade = new VentaFacade();
-                ventaFacade.procesarVenta(cabeceraVenta, listaProductos);
+            VentaFacade ventaFacade = new VentaFacade();
+            ventaFacade.procesarVenta(cabeceraVenta, listaProductos);
 
-                JOptionPane.showMessageDialog(null, "Venta registrada correctamente.");
+            JOptionPane.showMessageDialog(null, "Venta registrada correctamente.");
 
-                // Reset de UI
-                txt_subtotal.setText("0.0");
-                txt_igv.setText("0.0");
-                txt_descuento.setText("0.0");
-                txt_total_pagar.setText("0.0");
-                txt_efectivo.setText("0.0");
-                txt_cambio.setText("0.0");
-                listaProductos.clear();
-                listaTablaProducto();
-                CargarComboClientes();
+            // Reset de UI
+            txt_subtotal.setText("0.0");
+            txt_igv.setText("0.0");
+            txt_descuento.setText("0.0");
+            txt_total_pagar.setText("0.0");
+            txt_efectivo.setText("0.0");
+            txt_cambio.setText("0.0");
+            listaProductos.clear();
+            listaTablaProducto();
+            CargarComboClientes();
 
-            } else {
-                JOptionPane.showMessageDialog(null, "Debe agregar productos a la venta.");
-            }
         } else {
-            JOptionPane.showMessageDialog(null, "Debe seleccionar un cliente.");
+            JOptionPane.showMessageDialog(null, "Debe agregar productos a la venta.");
         }
-
+    } else {
+        JOptionPane.showMessageDialog(null, "Debe seleccionar un cliente.");
+    }
     }//GEN-LAST:event_jButton_RegistrarVentaActionPerformed
 
 
