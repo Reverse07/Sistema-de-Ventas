@@ -1,3 +1,5 @@
+<p align="center"> <a href="README.en.md"><img src="https://img.shields.io/badge/English%20Version-Click%20Here-blue?style=for-the-badge&logo=readme&logoColor=white" alt="English Version"/></a> <a href="README.md"><img src="https://img.shields.io/badge/Versión%20en%20Español-Haz%20Click-orange?style=for-the-badge&logo=readme&logoColor=white" alt="Versión en Español"/></a> </p>
+
 # 🛒 Sistema de Ventas - Java Desktop Application
 
 ![Sistema de Ventas](https://capsule-render.vercel.app/api?type=waving&color=0:667eea,100:764ba2&height=200&section=header&text=Sistema%20de%20Ventas&fontSize=50&fontColor=ffffff&animation=fadeIn&fontAlignY=38&desc=Gestión%20Empresarial%20Inteligente&descAlignY=58&descAlign=50)
